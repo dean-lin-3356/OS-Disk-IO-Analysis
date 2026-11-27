@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Disk I/O and Storage Workload Analysis">
+    <title>Disk I/O Analysis | OS Final Project</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">OS Research Project</div>
+    <a href="https://github.com/dean-lin-3356/OS-Disk-IO-Analysis">
+        GitHub Repository
+    </a>
+</header>
+
+<section class="hero">
+    <div class="container">
+        <p class="eyebrow">
+            OPERATING SYSTEMS · FINAL PROJECT · TOPIC 03
+        </p>
+
+        <h1>Disk I/O and Storage<br>Workload Analysis</h1>
+
+        <p class="subtitle">磁碟 I/O 與儲存工作負載分析</p>
+        <p>元智大學｜2026 作業系統期末專題</p>
+
+        <div class="metrics">
+            <div>
+                <strong>03</strong>
+                <span>研究問題</span>
+            </div>
+            <div>
+                <strong>03</strong>
+                <span>分析組別</span>
+            </div>
+            <div>
+                <strong>07</strong>
+                <span>專題成員</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<nav class="navigation">
+    <a href="#introduction">研究背景</a>
+    <a href="#dataset">資料集</a>
+    <a href="#methodology">研究方法</a>
+    <a href="#results">分析結果</a>
+    <a href="#discussion">討論</a>
+    <a href="#conclusion">結論</a>
+    <a href="#references">參考資料</a>
+</nav>
+
+<main class="container">
+
+    <section id="introduction">
+        <p class="section-label">01 / INTRODUCTION</p>
+        <h2>研究背景與目的</h2>
+
+        <p>
+            磁碟 I/O 是作業系統管理儲存資源的重要環節。
+            不同應用程式所產生的讀寫請求，在操作頻率、
+            請求大小、存取位置及回應時間上可能具有不同特性。
+        </p>
+
+        <p>
+            本專題使用 MSR Cambridge Block I/O Traces，
+            分析真實儲存系統的工作負載，並探討其與
+            作業系統 I/O Management、Caching 及
+            Storage Access Locality 的關係。
+        </p>
+
+        <h3>Research Questions</h3>
+
+        <div class="card-grid">
+            <article class="card">
+                <span class="number">RQ1</span>
+                <h3>Read/Write Workload</h3>
+                <p>
+                    讀取與寫入操作在操作比例、
+                    請求大小及 I/O 強度上有何差異？
+                </p>
+            </article>
+
+            <article class="card">
+                <span class="number">RQ2</span>
+                <h3>Response Time</h3>
+                <p>
+                    操作類型、請求大小及工作負載強度
+                    與回應時間有何關係？
+                </p>
+            </article>
+
+            <article class="card">
+                <span class="number">RQ3</span>
+                <h3>Access Locality</h3>
+                <p>
+                    儲存工作負載具有何種存取區域性，
+                    其對快取及 I/O 管理有何意義？
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section id="dataset">
+        <p class="section-label">02 / DATASET</p>
+        <h2>資料集介紹</h2>
+
+        <p>
+            本專題預計使用 MSR Cambridge Block I/O Traces，
+            資料包含真實儲存系統的區塊 I/O 請求紀錄。
+        </p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Description</th>
+                        <th>Standardized Unit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Timestamp</td>
+                        <td>請求時間</td>
+                        <td>seconds</td>
+                    </tr>
+                    <tr>
+                        <td>Host</td>
+                        <td>主機識別資訊</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Disk</td>
+                        <td>磁碟識別資訊</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Type</td>
+                        <td>讀取或寫入操作</td>
+                        <td>Read / Write</td>
+                    </tr>
+                    <tr>
+                        <td>Offset</td>
+                        <td>存取起始位置</td>
+                        <td>Bytes</td>
+                    </tr>
+                    <tr>
+                        <td>Size</td>
+                        <td>請求資料大小</td>
+                        <td>Bytes</td>
+                    </tr>
+                    <tr>
+                        <td>ResponseTime</td>
+                        <td>請求回應時間</td>
+                        <td>ms</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="note">
+            上述為預定統一格式，實際資料檔名、
+            原始單位及清理結果待第一組確認。
+        </p>
+
+        <a href="https://github.com/cacheMon/cache_dataset">
+            Dataset Source
+        </a>
+    </section>
+
+    <section id="methodology">
+        <p class="section-label">03 / METHODOLOGY</p>
+        <h2>研究方法</h2>
+
+        <div class="workflow">
+            <div>01<br>Dataset</div>
+            <div>02<br>Preprocessing</div>
+            <div>03<br>Analysis</div>
+            <div>04<br>Results</div>
+        </div>
+
+        <h3>研究流程</h3>
+        <ol>
+            <li>選擇並取得 MSR Cambridge Trace。</li>
+            <li>解析欄位、檢查資料品質及統一單位。</li>
+            <li>進行讀寫、延遲與存取區域性分析。</li>
+            <li>產出統計數據及視覺化圖表。</li>
+            <li>結合作業系統理論解釋分析結果。</li>
+        </ol>
+
+        <h3>Analysis Tools</h3>
+        <p>Python · Pandas · NumPy · Matplotlib</p>
+    </section>
+
+    <section id="results">
+        <p class="section-label">04 / RESULTS</p>
+        <h2>分析結果</h2>
+
+        <article class="result-card">
+            <span class="number">GROUP 01</span>
+            <h3>4.1 Read/Write Workload Analysis</h3>
+            <p>讀寫工作負載分析</p>
+
+            <ul>
+                <li>Read/Write 操作比例</li>
+                <li>Request Size 分布</li>
+                <li>I/O Operations Per Second (IOPS)</li>
+            </ul>
+
+            <div class="placeholder">
+                第一組研究圖表及統計結果待更新
+            </div>
+
+            <a href="https://github.com/dean-lin-3356/OS-Disk-IO-Analysis/tree/main/group1">
+                View Group 1 Workspace
+            </a>
+        </article>
+
+        <article class="result-card">
+            <span class="number">GROUP 02</span>
+            <h3>4.2 Response Time Investigation</h3>
+            <p>磁碟 I/O 回應時間分析</p>
+
+            <ul>
+                <li>Read/Write 延遲分布</li>
+                <li>P50、P95、P99 延遲比較</li>
+                <li>Request Size vs. Response Time</li>
+                <li>I/O Intensity vs. Response Time</li>
+            </ul>
+
+            <div class="placeholder">
+                第二組研究圖表及統計結果待更新
+            </div>
+
+            <a href="https://github.com/dean-lin-3356/OS-Disk-IO-Analysis/tree/main/group2">
+                View Group 2 Workspace
+            </a>
+        </article>
+
+        <article class="result-card">
+            <span class="number">GROUP 03</span>
+            <h3>4.3 Storage Access Patterns</h3>
+            <p>儲存存取模式與區域性分析</p>
+
+            <ul>
+                <li>Request Offset 分析</li>
+                <li>Sequential / Scattered Access</li>
+                <li>Storage Access Locality</li>
+                <li>Disk Scheduling Simulation（選做）</li>
+            </ul>
+
+            <div class="placeholder">
+                第三組研究圖表及統計結果待更新
+            </div>
+
+            <a href="https://github.com/dean-lin-3356/OS-Disk-IO-Analysis/tree/main/group3">
+                View Group 3 Workspace
+            </a>
+        </article>
+    </section>
+
+    <section id="discussion">
+        <p class="section-label">05 / DISCUSSION</p>
+        <h2>結果討論</h2>
+
+        <div class="card-grid">
+            <article class="card">
+                <h3>I/O Management</h3>
+                <p>探討工作負載特性與作業系統 I/O 管理的關係。</p>
+            </article>
+
+            <article class="card">
+                <h3>Caching</h3>
+                <p>探討存取區域性對快取機制的可能影響。</p>
+            </article>
+
+            <article class="card">
+                <h3>Limitations</h3>
+                <p>說明資料範圍、分析假設及研究限制。</p>
+            </article>
+        </div>
+
+        <p class="note">完整討論將依據實際分析結果撰寫。</p>
+    </section>
+
+    <section id="conclusion">
+        <p class="section-label">06 / CONCLUSION</p>
+        <h2>研究結論</h2>
+        <p>待三組完成分析後，統整主要研究發現與技術心得。</p>
+    </section>
+
+    <section id="references">
+        <p class="section-label">07 / REFERENCES</p>
+        <h2>參考資料與研究重現</h2>
+
+        <ul>
+            <li>
+                <a href="https://github.com/cacheMon/cache_dataset">
+                    MSR Cambridge Trace Catalog
+                </a>
+            </li>
+            <li>
+                <a href="https://github.com/dean-lin-3356/OS-Disk-IO-Analysis">
+                    Project Source Code
+                </a>
+            </li>
+        </ul>
+
+        <h3>Reproducibility</h3>
+        <p>
+            資料下載方式、清理程式、分析程式及套件需求，
+            將於各組完成後統一整理至 GitHub Repository。
+        </p>
+
+        <h3>AI Assistance</h3>
+        <p>
+            本專題使用 ChatGPT 協助專題規劃、
+            網站建置及技術討論。
+        </p>
+    </section>
+
+</main>
+
+<footer>
+    <p>Operating Systems Final Project · Topic 03</p>
+    <p>Yuan Ze University · 2026</p>
+    <a href="https://github.com/dean-lin-3356/OS-Disk-IO-Analysis">
+        GitHub Repository
+    </a>
+</footer>
+
+</body>
+</html>
