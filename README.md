@@ -1,8 +1,6 @@
 # Disk I/O and Storage Workload Analysis
 
-![Topic](https://img.shields.io/badge/Topic-3-blue)
-![Language](https://img.shields.io/badge/Language-Python-yellow)
-![Progress](https://img.shields.io/badge/Progress-Week%202-orange)
+**Topic 3** | **Python** | **Week 2 - In Progress**
 
 Operating Systems Final Project
 
