@@ -1,4 +1,4 @@
-
+"""
 功能：
 1. 空間局部性 (Spatial Locality) 分析：連續存取判定、尋道偏移量 (Offset Delta)
 2. 時間局部性 (Temporal Locality) 分析：4KB 區塊劃分、重用率 (Reuse Ratio)
